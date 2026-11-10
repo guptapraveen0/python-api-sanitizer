@@ -1,0 +1,21 @@
+{
+  "source": "offline mock fixture",
+  "total_received": 3,
+  "valid_records": 3,
+  "invalid_records": 0,
+  "records": [
+    {
+      "id": 1,
+      "name": "Leanne Graham"
+    },
+    {
+      "id": 2,
+      "name": "Ervin Howell"
+    },
+    {
+      "id": 3,
+      "name": "Clementine Bauch"
+    }
+  ],
+  "errors": []
+}

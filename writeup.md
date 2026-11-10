@@ -1,0 +1,7 @@
+## Short technical write-up
+
+The client uses a finite timeout on every HTTP request so a stalled server or network cannot leave the script waiting indefinitely. TLS certificate verification is left at Requests' secure default; this authenticates the server and helps protect the response from interception or tampering. The code never sets `verify=False`, never sends credentials, and makes only one request per run.
+
+Transport failures and application-level failures are handled separately. `Timeout` and `ConnectionError` are caught around the network call, while non-200 status codes are checked before attempting JSON parsing. A successful response is decoded with `response.json()` inside a `ValueError` handler. The top-level payload must be a JSON list; individual entries must be objects with a valid integer `id` and non-empty string `name`. A malformed record is counted and skipped rather than aborting the entire batch. A malformed top-level structure is reported as a clear application error.
+
+API responses are untrusted input even when the endpoint is public: data can be missing, incorrectly typed, unexpectedly large, malformed, or contain fields that should not be disclosed. The report therefore uses an allowlist and emits only `id` and `name`; emails, usernames, phone numbers, addresses, headers, and tokens are never copied. The request is capped at ten records, has no retry loop, and the offline `--mock` mode permits deterministic testing without network access.

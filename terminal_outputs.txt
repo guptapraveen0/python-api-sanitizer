@@ -1,0 +1,48 @@
+API sanitizer — scenario transcripts
+======================================
+
+1) Live run, _limit=3 (expected terminal output; execute on a network-enabled machine)
+$ python api_sanitizer.py --limit 3
+Report written: reports/api_summary.json
+total_received=3 valid_records=3 invalid_records=0
+Note: This live request was not executed in this offline build environment.
+
+2) Offline mock run (executed)
+$ python api_sanitizer.py --mock
+Report written: reports/api_summary.json
+total_received=3 valid_records=3 invalid_records=0
+Spreadsheet runtime warmup failed during python startup
+Traceback (most recent call last):
+  File "/tmp/tmp.QlpUkOUI9D/artifact_tool_v2-2.8.66/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py", line 26, in warm_spreadsheet_runtime_on_startup
+  File "/tmp/tmp.QlpUkOUI9D/artifact_tool_v2-2.8.66/artifact_tool/spreadsheet_warmup.py", line 785, in warm_spreadsheet_runtime
+  File "/tmp/tmp.QlpUkOUI9D/artifact_tool_v2-2.8.66/artifact_tool/spreadsheet_warmup.py", line 718, in _warm_feature_flows
+  File "/tmp/tmp.QlpUkOUI9D/artifact_tool_v2-2.8.66/artifact_tool/spreadsheet_warmup.py", line 509, in _warm_drawing_and_image_flows
+  File "/tmp/tmp.QlpUkOUI9D/artifact_tool_v2-2.8.66/artifact_tool/generated/interface/models.py", line 32861, in bring_to_front
+  File "/tmp/tmp.QlpUkOUI9D/artifact_tool_v2-2.8.66/artifact_tool/rpc/remote.py", line 764, in __call__
+  File "/tmp/tmp.QlpUkOUI9D/artifact_tool_v2-2.8.66/artifact_tool/rpc/client.py", line 175, in call
+artifact_tool.rpc.client.RemoteError: Element ordering requires an owning element collection.
+
+3) Wrong path / 404 (expected terminal output; run on a network-enabled machine)
+$ python api_sanitizer.py --url https://jsonplaceholder.typicode.com/does-not-exist --limit 3
+Report written: reports/api_summary.json
+total_received=0 valid_records=0 invalid_records=0
+ERROR: HTTP error: server returned status 404.
+
+4) Unreachable host, 2-second timeout (expected terminal output; outcome can be DNS/connection failure)
+$ python api_sanitizer.py --url https://does-not-exist.invalid/users --timeout 2 --limit 3
+Report written: reports/api_summary.json
+total_received=0 valid_records=0 invalid_records=0
+ERROR: Connection failed; check host, DNS, and network connectivity.
+Note: Depending on the network, the same test may report a timeout instead.
+
+5) Malformed fixture with one missing required field (executed)
+$ python api_sanitizer.py --fixture fixtures/malformed_fixture.json
+Report written: reports/api_summary.json
+total_received=2 valid_records=1 invalid_records=1
+ERROR: record[1]: missing or invalid required field(s): id, name
+
+Non-list fixture (additional check; executed)
+$ python api_sanitizer.py --fixture fixtures/nonlist_fixture.json
+Report written: reports/api_summary.json
+total_received=0 valid_records=0 invalid_records=0
+ERROR: Expected top-level JSON array (list).
